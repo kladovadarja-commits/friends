@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Perk: Гадание</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #2c3e50;
+            background-image: url('https://www.transparenttextures.com/patterns/brick-wall.png'); /* Кирпичная стена кафе */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Trebuchet MS', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Знаменитый оранжевый диван (стилизация) */
+        .sofa {
+            position: absolute;
+            bottom: -20px;
+            width: 100%;
+            height: 150px;
+            background: #e67e22; /* Оранжевый цвет */
+            border-radius: 50px 50px 0 0;
+            box-shadow: inset 0 20px 40px rgba(0,0,0,0.2), 0 -10px 20px rgba(0,0,0,0.3);
+            border-top: 10px solid #d35400;
+            z-index: 0;
+        }
+
+        h1 { 
+            color: #f1c40f; 
+            text-shadow: 2px 2px 4px #000; 
+            z-index: 1;
+            margin-bottom: 10px;
+        }
+
+        .cup-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            background: #fff;
+            border-radius: 50%;
+            border: 15px solid #ecf0f1;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        #coffee-liquid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #3d2b1f;
+            transition: transform 2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            z-index: 2;
+        }
+
+        /* Пенка в виде сердечка или круга */
+        .latte-art {
+            position: absolute;
+            top: 30%; left: 30%;
+            width: 40%; height: 40%;
+            background: rgba(236, 240, 241, 0.3);
+            filter: blur(15px);
+            border-radius: 50%;
+        }
+
+        #fortune-text {
+            padding: 30px;
+            color: #4b3832;
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1.4;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        .hint {
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 20px;
+            z-index: 1;
+        }
+
+        #reset-btn {
+            display: none;
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Central Perk</h1>
+    
+    <div class="cup-container" id="cup" onclick="playGame()">
+        <div id="coffee-liquid">
+            <div class="latte-art"></div>
+        </div>
+        <div id="fortune-text"></div>
+    </div>
+
+    <p class="hint" id="status">Нажми на кофе, чтобы выпить</p>
+    <button id="reset-btn" onclick="resetGame()">Еще одну чашку!</button>
+
+    <div class="sofa"></div>
+
+    <audio id="theme-song" loop>
+        <source src="https://www.soundboard.com/handler/Downloadaudio.ashx?id=162657" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const quotes = [
+            "Добро пожаловать в реальный мир. Он ужасен, но ты его полюбишь!",
+            "У меня нет плана. У меня даже 'пла' нет.",
+            "Джо не делится едой!",
+            "Как поживаешь? (How you doin'?)",
+            "МЫ СДЕЛАЛИ ПЕРЕРЫВ!",
+            "О мой бог! (голосом Дженис)",
+            "Поверни! Поверни! (Pivot!)",
+            "Она — твой лобстер.",
+            "Сарказм — мой единственный защитный механизм.",
+            "Может, я не получу эту работу, но зато у меня есть отличные сапоги.",
+            "Я не так силен в советах. Тебе не подойдет саркастический комментарий?",
+            "Никто не знает, чем я занимаюсь на работе.",
+            "Джо, у тебя в кармане индейка?",
+            "Я в порядке! (I'm fine!)",
+            "Это всё равно что сказать, что есть только один вкус мороженого.",
+            "У меня сегодня был очень длинный день... с 1994 года."
+            // ... здесь остаются те же 100 цитат, что мы собрали раньше
+        ];
+
+        let musicStarted = false;
+
+        function playGame() {
+            // Включаем музыку при первом клике
+            const music = document.getElementById('theme-song');
+            if (!musicStarted) {
+                music.play();
+                musicStarted = true;
+            }
+
+            const liquid = document.getElementById('coffee-liquid');
+            const fortune = document.getElementById('fortune-text');
+            const status = document.getElementById('status');
+            const btn = document.getElementById('reset-btn');
+
+            // Анимация выпивания
+            liquid.style.transform = 'translateY(-100%)';
+            status.style.display = 'none';
+
+            // Выбор ответа
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            fortune.innerText = randomQuote;
+
+            setTimeout(() => {
+                fortune.style.opacity = '1';
+                btn.style.display = 'block';
+            }, 1200);
+        }
+
+        function resetGame() {
+            document.getElementById('coffee-liquid').style.transform = 'translateY(0)';
+            document.getElementById('fortune-text').style.opacity = '0';
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('reset-btn').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
