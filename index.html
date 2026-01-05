@@ -3,128 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central Perk: Гадание</title>
+    <title>Гадание в Central Perk</title>
     <style>
         body {
             margin: 0;
-            background-color: #2c3e50;
-            background-image: url('https://www.transparenttextures.com/patterns/brick-wall.png'); /* Кирпичная стена кафе */
+            background-color: #f4e1d2; /* Цвет уютных стен кафе */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            font-family: 'Trebuchet MS', sans-serif;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
         }
 
-        /* Знаменитый оранжевый диван (стилизация) */
-        .sofa {
-            position: absolute;
-            bottom: -20px;
-            width: 100%;
-            height: 150px;
-            background: #e67e22; /* Оранжевый цвет */
-            border-radius: 50px 50px 0 0;
-            box-shadow: inset 0 20px 40px rgba(0,0,0,0.2), 0 -10px 20px rgba(0,0,0,0.3);
-            border-top: 10px solid #d35400;
-            z-index: 0;
-        }
+        h1 { color: #4b3832; margin-bottom: 30px; }
 
-        h1 { 
-            color: #f1c40f; 
-            text-shadow: 2px 2px 4px #000; 
-            z-index: 1;
-            margin-bottom: 10px;
-        }
-
+        /* Чашка кофе */
         .cup-container {
             position: relative;
-            width: 280px;
-            height: 280px;
+            width: 250px;
+            height: 250px;
             background: #fff;
             border-radius: 50%;
-            border: 15px solid #ecf0f1;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 15px solid #ddd;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1), inset 0 0 20px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             overflow: hidden;
-            z-index: 1;
         }
 
+        /* Кофе (жидкость) */
         #coffee-liquid {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #3d2b1f;
-            transition: transform 2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            background: #4b3832;
+            transition: transform 1.5s ease-in-out;
             z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Пенка в виде сердечка или круга */
-        .latte-art {
-            position: absolute;
-            top: 30%; left: 30%;
-            width: 40%; height: 40%;
-            background: rgba(236, 240, 241, 0.3);
-            filter: blur(15px);
+        /* Пенка/пар */
+        .foam {
+            width: 80%; height: 80%;
+            background: rgba(255,255,255,0.1);
             border-radius: 50%;
+            filter: blur(10px);
         }
 
+        /* Текст на дне (гуща) */
         #fortune-text {
-            padding: 30px;
-            color: #4b3832;
-            font-size: 1.2rem;
-            font-weight: bold;
-            line-height: 1.4;
+            padding: 20px;
+            color: #3d2b1f;
+            font-size: 1.1rem;
+            font-style: italic;
             z-index: 1;
             opacity: 0;
-            transition: opacity 1.5s ease;
+            transition: opacity 2s ease-in;
         }
 
-        .hint {
-            color: white;
-            background: rgba(0,0,0,0.5);
-            padding: 5px 15px;
-            border-radius: 20px;
+        .instruction { margin-top: 20px; color: #7b5e57; }
+        
+        button {
             margin-top: 20px;
-            z-index: 1;
-        }
-
-        #reset-btn {
-            display: none;
-            margin-top: 15px;
-            padding: 10px 25px;
-            background: #27ae60;
+            padding: 10px 20px;
+            background: #4b3832;
             color: white;
             border: none;
-            border-radius: 25px;
-            font-weight: bold;
+            border-radius: 5px;
             cursor: pointer;
-            z-index: 1;
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <h1>Central Perk</h1>
+    <h1>Спроси у «Друзей» за чашечкой кофе</h1>
     
-    <div class="cup-container" id="cup" onclick="playGame()">
+    <div class="cup-container" onclick="drinkCoffee()">
         <div id="coffee-liquid">
-            <div class="latte-art"></div>
+            <div class="foam"></div>
         </div>
-        <div id="fortune-text"></div>
+        <div id="fortune-text">Здесь будет ваш ответ...</div>
     </div>
 
-    <p class="hint" id="status">Нажми на кофе, чтобы выпить</p>
-    <button id="reset-btn" onclick="resetGame()">Еще одну чашку!</button>
-
-    <div class="sofa"></div>
-
-    <audio id="theme-song" loop>
-        <source src="https://www.soundboard.com/handler/Downloadaudio.ashx?id=162657" type="audio/mpeg">
-    </audio>
+    <p class="instruction" id="hint">Нажмите на чашку, чтобы выпить кофе</p>
+    <button id="reset-btn" onclick="resetCup()">Налить еще чашечку</button>
 
     <script>
         const quotes = [
@@ -134,53 +102,133 @@
             "Как поживаешь? (How you doin'?)",
             "МЫ СДЕЛАЛИ ПЕРЕРЫВ!",
             "О мой бог! (голосом Дженис)",
+            "Это всё равно что сказать, что есть только один вкус мороженого.",
+            "Если нужно, я на тебя пописаю! (Чендлер о медузе)",
+            "Я не так силен в советах. Тебе не подойдет саркастический комментарий?",
+            "Они не знают, что мы знаем, что они знают, что мы знаем!",
             "Поверни! Поверни! (Pivot!)",
             "Она — твой лобстер.",
-            "Сарказм — мой единственный защитный механизм.",
-            "Может, я не получу эту работу, но зато у меня есть отличные сапоги.",
-            "Я не так силен в советах. Тебе не подойдет саркастический комментарий?",
-            "Никто не знает, чем я занимаюсь на работе.",
-            "Джо, у тебя в кармане индейка?",
+            "Удача — это когда ты находишь пять долларов в старых джинсах.",
             "Я в порядке! (I'm fine!)",
-            "Это всё равно что сказать, что есть только один вкус мороженого.",
-            "У меня сегодня был очень длинный день... с 1994 года."
-            // ... здесь остаются те же 100 цитат, что мы собрали раньше
+            "Смирись с тем, что ты никогда не будешь прав.",
+            "Никто не знает, чем я занимаюсь на работе.",
+            "Может, я не получу эту работу, но зато у меня есть отличные сапоги.",
+            "У меня сегодня был очень длинный день... с 1994 года.",
+            "Я пахну как солнечный зайчик!",
+            "Разве это не смешно? Нет.",
+            "Я не могу спать без своей утки.",
+            "Если бы я был мужчиной... а, подождите, я и так мужчина.",
+            "У меня есть критическая нехватка денег.",
+            "Жизнь полна сюрпризов, и большинство из них — счета.",
+            "Ты не можешь просто так зайти и съесть мою индейку!",
+            "Я королева неудачников!",
+            "Давайте просто признаем, что я всегда права.",
+            "Сарказм — мой единственный защитный механизм.",
+            "Я не ленивый, я просто экономлю энергию.",
+            "Еда — это любовь.",
+            "Друзья — это семья, которую мы выбираем сами.",
+            "Иногда мне кажется, что я живу в комедии.",
+            "Никогда не говори 'никогда', если только речь не об этой прическе.",
+            "Я просто хочу найти своего лобстера.",
+            "Кофе — это единственное, что держит меня на плаву.",
+            "Мир был бы лучше, если бы все ели пиццу.",
+            "Я не странная, я просто эксклюзивная.",
+            "Всегда будь собой, если только ты не можешь быть Джо.",
+            "Моя жизнь — это серия неловких моментов.",
+            "Шопинг — это моя терапия.",
+            "Я не могу решить, что мне надеть на завтрак.",
+            "Дружба важнее, чем правила.",
+            "Иногда нужно просто потанцевать.",
+            "Я люблю тебя больше, чем сэндвич... почти.",
+            "Жизнь слишком коротка, чтобы не смеяться над собой.",
+            "Ты мой лучший друг, и это главное.",
+            "Каждый день — это новый шанс облажаться.",
+            "Я не плачу, это просто дождь на моем лице.",
+            "Кофе объединяет людей.",
+            "Ты — мой человек.",
+            "Не бойся быть смешным.",
+            "Жизнь без друзей — это как кофе без кофеина.",
+            "Смейся, даже если тебе грустно.",
+            "Будь тем, кто ты есть.",
+            "Счастье в мелочах, например, в чистой квартире.",
+            "Никогда не сдавайся, особенно если ищешь пульт.",
+            "Ты заслуживаешь самого лучшего.",
+            "Мир полон возможностей, просто выйди из кофейни.",
+            "Дружба — это работа, но самая приятная.",
+            "Смейся над своими ошибками.",
+            "Жизнь — это не только работа.",
+            "Будь добрым к себе.",
+            "Ты — звезда своей собственной жизни.",
+            "Иногда нужно просто расслабиться.",
+            "Верь в себя, как Джо верит в свою карьеру.",
+            "Мир — это сцена, а мы — плохие актеры.",
+            "Любовь — это когда ты отдаешь последний кусок пиццы.",
+            "Будь всегда на чеку (Unagi).",
+            "Жизнь — это путешествие, а не пункт назначения.",
+            "Смейся от души.",
+            "Ты — особенный.",
+            "Не позволяй никому портить твое настроение.",
+            "Друзья всегда придут на помощь.",
+            "Будь открыт новому.",
+            "Твоя улыбка бесценна.",
+            "Жизнь прекрасна, если смотреть на нее под правильным углом.",
+            "Никогда не забывай своих друзей.",
+            "Ты — часть команды.",
+            "Будь смелым в своих мечтах.",
+            "Счастье — это когда тебя понимают.",
+            "Мир нуждается в твоем смехе.",
+            "Не бойся рисковать.",
+            "Ты — лучший в своем деле.",
+            "Жизнь — это подарок.",
+            "Будь всегда в движении.",
+            "Твои друзья — твое сокровище.",
+            "Верь в любовь.",
+            "Мир полон красок.",
+            "Будь позитивным.",
+            "Ты — чудо.",
+            "Не забывай радоваться жизни.",
+            "Твой путь будет светлым.",
+            "Будь всегда собой.",
+            "Ты — сила.",
+            "Мир любит тебя.",
+            "Будь счастлив здесь и сейчас.",
+            "Твоя жизнь полна смысла.",
+            "Верь в лучшее.",
+            "Ты — вдохновение.",
+            "Жизнь — это песня, пой её!"
         ];
 
-        let musicStarted = false;
-
-        function playGame() {
-            // Включаем музыку при первом клике
-            const music = document.getElementById('theme-song');
-            if (!musicStarted) {
-                music.play();
-                musicStarted = true;
-            }
-
+        function drinkCoffee() {
             const liquid = document.getElementById('coffee-liquid');
             const fortune = document.getElementById('fortune-text');
-            const status = document.getElementById('status');
+            const hint = document.getElementById('hint');
             const btn = document.getElementById('reset-btn');
 
-            // Анимация выпивания
+            // "Выпиваем" кофе (сдвигаем слой вверх)
             liquid.style.transform = 'translateY(-100%)';
-            status.style.display = 'none';
+            hint.style.opacity = '0';
 
-            // Выбор ответа
+            // Выбираем случайную цитату
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
             fortune.innerText = randomQuote;
 
+            // Показываем текст
             setTimeout(() => {
                 fortune.style.opacity = '1';
                 btn.style.display = 'block';
-            }, 1200);
+            }, 1000);
         }
 
-        function resetGame() {
-            document.getElementById('coffee-liquid').style.transform = 'translateY(0)';
-            document.getElementById('fortune-text').style.opacity = '0';
-            document.getElementById('status').style.display = 'block';
-            document.getElementById('reset-btn').style.display = 'none';
+        function resetCup() {
+            const liquid = document.getElementById('coffee-liquid');
+            const fortune = document.getElementById('fortune-text');
+            const hint = document.getElementById('hint');
+            const btn = document.getElementById('reset-btn');
+
+            liquid.style.transform = 'translateY(0)';
+            fortune.style.opacity = '0';
+            hint.style.opacity = '1';
+            btn.style.display = 'none';
         }
     </script>
 </body>
